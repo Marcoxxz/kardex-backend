@@ -17,7 +17,6 @@ INSERT INTO estudiantes (ru, ci, nombres, apellidos, carrera)
 SELECT 'RU-1102', '9876543', 'Ana Sofía', 'Vargas Beltrán', 'Ingeniería de Sistemas'
 WHERE NOT EXISTS (SELECT 1 FROM estudiantes WHERE ru = 'RU-1102');
 
-
 -- =====================================================================
 -- 2. POBLAR TABLA USUARIOS (LOGIN CON HASHES MD5 DÉBILES)
 -- =====================================================================
@@ -28,7 +27,6 @@ WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE username = 'admin');
 INSERT INTO usuarios (username, password, nombre_real, rol) 
 SELECT 'docente_perez', 'ac99fecf6fcb8c25d18788d14a5384ee', 'Ing. Alexander Pérez', 'DOCENTE'
 WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE username = 'docente_perez');
-
 
 -- =====================================================================
 -- 3. POBLAR TABLA NOTAS (ENTORNO VULNERABLE A IDOR)
