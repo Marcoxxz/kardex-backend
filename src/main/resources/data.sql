@@ -49,7 +49,6 @@ INSERT INTO notas (ru, sigla_materia, nombre_materia, nota_final, gestion)
 SELECT 'RU-4512', 'SIS-222', 'Base de Datos II', 51, '2/2025'
 WHERE NOT EXISTS (SELECT 1 FROM notas WHERE ru = 'RU-4512' AND sigla_materia = 'SIS-222');
 
-
 -- =====================================================================
 -- 4. POBLAR TABLA RECLAMOS (ENTORNO VULNERABLE A XSS ALMACENADO)
 -- =====================================================================
