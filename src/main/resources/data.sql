@@ -22,7 +22,7 @@ WHERE NOT EXISTS (SELECT 1 FROM estudiantes WHERE ru = 'RU-1102');
 -- 2. POBLAR TABLA USUARIOS (LOGIN CON HASHES MD5 DÉBILES)
 -- =====================================================================
 INSERT INTO usuarios (username, password, nombre_real, rol) 
-SELECT 'admin', '0192023a7bbd73250516f069df18b500', 'Director de Carrera UATF', 'ADMINISTRADOR'
+SELECT 'admin', '0192023a7bbd73250516f069df18b500', 'Administrador', 'ADMINISTRADOR'
 WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE username = 'admin');
 
 INSERT INTO usuarios (username, password, nombre_real, rol) 
