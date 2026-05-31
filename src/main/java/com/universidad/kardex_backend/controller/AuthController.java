@@ -49,6 +49,7 @@ public class AuthController {
             // SQLi" en el login
             return ResponseEntity.status(500).body("Error interno en la consulta SQL: " + e.getMessage());
         }
+        
     }
 
     // ====================================================================

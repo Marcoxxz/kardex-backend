@@ -62,3 +62,14 @@ WHERE NOT EXISTS (SELECT 1 FROM reclamos WHERE ru = 'RU-9931' AND asunto = 'Hora
 INSERT INTO reclamos (ru, asunto, detalle) 
 SELECT 'RU-1102', 'Actualización de Kardex', 'Tengo problemas con la convalidación de mi matrícula de la gestión pasada, no aparece reflejada en el sistema.'
 WHERE NOT EXISTS (SELECT 1 FROM reclamos WHERE ru = 'RU-1102' AND asunto = 'Actualización de Kardex');
+
+-- =====================================================================
+-- 5. datos materia
+-- =====================================================================
+-- Insertar datos de ejemplo
+INSERT INTO materias (sigla, nombre, creditos, carrera, semestre, requisito, area) VALUES
+('INF-101', 'Programación I', 4, 'Ing. Informática', 1, NULL, 'Programación'),
+('INF-102', 'Programación II', 4, 'Ing. Informática', 2, 'INF-101', 'Programación'),
+('INF-201', 'Bases de Datos I', 4, 'Ing. Informática', 3, NULL, 'Bases de Datos'),
+('MAT-101', 'Cálculo I', 5, 'Ing. Informática', 1, NULL, 'Matemáticas'),
+('MAT-102', 'Cálculo II', 5, 'Ing. Informática', 2, 'MAT-101', 'Matemáticas');

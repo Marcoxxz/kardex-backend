@@ -14,22 +14,26 @@ public class Nota {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String ru; // Registro Universitario del estudiante dueño de la nota
+    private String ru; // Registro Universitario del estudiante
     private String siglaMateria;
     private String nombreMateria;
     private Integer notaFinal;
     private String gestion;
+    private Integer creditos; // ← CAMPO NUEVO
 
     // Constructor vacío
     public Nota() {
     }
 
-    public Nota(String ru, String siglaMateria, String nombreMateria, Integer notaFinal, String gestion) {
+    // Constructor actualizado con créditos
+    public Nota(String ru, String siglaMateria, String nombreMateria,
+            Integer notaFinal, String gestion, Integer creditos) {
         this.ru = ru;
         this.siglaMateria = siglaMateria;
         this.nombreMateria = nombreMateria;
         this.notaFinal = notaFinal;
         this.gestion = gestion;
+        this.creditos = creditos;
     }
 
     // Getters y Setters
@@ -79,5 +83,13 @@ public class Nota {
 
     public void setGestion(String gestion) {
         this.gestion = gestion;
+    }
+
+    public Integer getCreditos() {
+        return creditos;
+    }
+
+    public void setCreditos(Integer creditos) {
+        this.creditos = creditos;
     }
 }
