@@ -71,4 +71,5 @@ VALUES
 ('INF-102', 'Programación II', 4, 'Ing. Informática', 2, 'INF-101', 'Programación', true),
 ('INF-201', 'Bases de Datos I', 4, 'Ing. Informática', 3, NULL, 'Bases de Datos', true),
 ('MAT-101', 'Cálculo I', 5, 'Ing. Informática', 1, NULL, 'Matemáticas', true),
-('MAT-102', 'Cálculo II', 5, 'Ing. Informática', 2, 'MAT-101', 'Matemáticas', true);
+('MAT-102', 'Cálculo II', 5, 'Ing. Informática', 2, 'MAT-101', 'Matemáticas', true)
+ON CONFLICT (sigla) DO NOTHING;
