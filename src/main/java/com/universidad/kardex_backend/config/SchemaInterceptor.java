@@ -12,6 +12,10 @@ public class SchemaInterceptor implements CurrentTenantIdentifierResolver {
         currentSchema.set(schema);
     }
 
+    public static String getCurrentSchema() {
+        return currentSchema.get();
+    }
+
     public static void clear() {
         currentSchema.remove();
     }
