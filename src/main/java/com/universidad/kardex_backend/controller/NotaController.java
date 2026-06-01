@@ -4,6 +4,7 @@ import com.universidad.kardex_backend.model.Nota;
 import com.universidad.kardex_backend.repository.NotaRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,12 @@ public class NotaController {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    // Método para obtener el esquema actual
+    private String getCurrentSchema() {
+        Query query = entityManager.createNativeQuery("SELECT current_schema()");
+        return (String) query.getSingleResult();
+    }
 
     @Autowired
     private NotaRepository notaRepository; // Necesitas inyectar el repository
