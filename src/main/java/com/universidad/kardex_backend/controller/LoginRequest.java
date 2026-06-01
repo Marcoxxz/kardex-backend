@@ -1,18 +1,29 @@
 package com.universidad.kardex_backend.controller;
 
 public class LoginRequest {
-    private String username;
+    private String ru; // ← NUEVO: para estudiantes
+    private String username; // para admin
     private String password;
 
-    // Constructor vacío obligatorio para que Jackson pueda instanciar el objeto
-    public LoginRequest() {}
+    // Constructor vacío
+    public LoginRequest() {
+    }
 
-    public LoginRequest(String username, String password) {
+    public LoginRequest(String ru, String username, String password) {
+        this.ru = ru;
         this.username = username;
         this.password = password;
     }
 
-    // Getters y Setters explícitos
+    // Getters y Setters
+    public String getRu() {
+        return ru;
+    }
+
+    public void setRu(String ru) {
+        this.ru = ru;
+    }
+
     public String getUsername() {
         return username;
     }
