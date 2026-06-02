@@ -45,6 +45,7 @@ public class NotaController {
 
     @GetMapping("/estudiante/{ru}")
     public ResponseEntity<?> getNotasByEstudiante(@PathVariable("ru") String ru) {
+        System.out.println("SCHEMA = " + getCurrentSchema());
         try {
             String schema = getCurrentSchema();
             String sql = "SELECT * FROM " + schema + ".notas WHERE ru = '" + ru + "'";
