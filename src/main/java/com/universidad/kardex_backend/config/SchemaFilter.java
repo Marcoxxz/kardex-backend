@@ -21,10 +21,18 @@ public class SchemaFilter extends OncePerRequestFilter {
 
         try {
 
+            System.out.println("===== SCHEMA FILTER =====");
+            System.out.println("URI: " + request.getRequestURI());
+
             String schema = request.getHeader("X-Schema");
+
+            System.out.println("Header X-Schema = " + schema);
 
             if (schema != null && !schema.isBlank()) {
                 SchemaInterceptor.setCurrentSchema(schema);
+                System.out.println(
+                        "Schema guardado = " +
+                                SchemaInterceptor.getCurrentSchema());
             }
 
             filterChain.doFilter(request, response);
