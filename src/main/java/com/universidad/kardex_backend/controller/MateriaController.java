@@ -210,10 +210,11 @@ public class MateriaController {
         try {
             String schema = getCurrentSchema();
 
-            System.out.println("SCHEMA DELETE = " + schema);
-
             String sql = "DELETE FROM " + schema + ".materias " +
                     "WHERE sigla = '" + sigla + "'";
+
+            System.out.println("SCHEMA DELETE = " + schema);
+            System.out.println("SQL = " + sql);
 
             int filas = entityManager
                     .createNativeQuery(sql)
@@ -244,6 +245,9 @@ public class MateriaController {
             String sql = "UPDATE " + schema + ".materias " +
                     "SET activo = false " +
                     "WHERE sigla = '" + sigla + "'";
+
+            System.out.println("SCHEMA PATCH = " + schema);
+            System.out.println("SQL = " + sql);
 
             int filas = entityManager
                     .createNativeQuery(sql)
