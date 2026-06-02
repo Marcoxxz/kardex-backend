@@ -160,14 +160,15 @@ public class MateriaController {
                     .body("Materia creada correctamente");
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
     }
 
     // Actualizar materia existente (solo ADMIN)
-    @PutMapping("/{sigla}")
     @Transactional
+    @PutMapping("/{sigla}")
     public ResponseEntity<?> updateMateria(
             @PathVariable String sigla,
             @RequestBody Materia materia) {
@@ -200,6 +201,7 @@ public class MateriaController {
             return ResponseEntity.ok("Materia actualizada");
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
@@ -233,14 +235,15 @@ public class MateriaController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
     }
 
     // Soft delete (desactivar materia) - solo ADMIN
-    @PatchMapping("/{sigla}/desactivar")
     @Transactional
+    @PatchMapping("/{sigla}/desactivar")
     public ResponseEntity<?> desactivarMateria(@PathVariable String sigla) {
 
         try {
@@ -264,14 +267,15 @@ public class MateriaController {
             return ResponseEntity.ok("Materia desactivada");
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
     }
 
     // Activar materia - solo ADMIN
-    @PatchMapping("/{sigla}/activar")
     @Transactional
+    @PatchMapping("/{sigla}/activar")
     public ResponseEntity<?> activarMateria(@PathVariable String sigla) {
 
         try {
@@ -292,6 +296,7 @@ public class MateriaController {
             return ResponseEntity.ok("Materia activada");
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
