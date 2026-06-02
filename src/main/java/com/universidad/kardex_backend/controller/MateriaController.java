@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/v1/materias")
@@ -166,6 +167,7 @@ public class MateriaController {
 
     // Actualizar materia existente (solo ADMIN)
     @PutMapping("/{sigla}")
+    @Transactional
     public ResponseEntity<?> updateMateria(
             @PathVariable String sigla,
             @RequestBody Materia materia) {
@@ -205,6 +207,7 @@ public class MateriaController {
 
     // Eliminar materia (solo ADMIN)
     @DeleteMapping("/{sigla}")
+    @Transactional
     public ResponseEntity<?> deleteMateria(@PathVariable String sigla) {
 
         try {
@@ -237,6 +240,7 @@ public class MateriaController {
 
     // Soft delete (desactivar materia) - solo ADMIN
     @PatchMapping("/{sigla}/desactivar")
+    @Transactional
     public ResponseEntity<?> desactivarMateria(@PathVariable String sigla) {
 
         try {
@@ -267,6 +271,7 @@ public class MateriaController {
 
     // Activar materia - solo ADMIN
     @PatchMapping("/{sigla}/activar")
+    @Transactional
     public ResponseEntity<?> activarMateria(@PathVariable String sigla) {
 
         try {
