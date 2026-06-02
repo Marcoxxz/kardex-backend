@@ -23,6 +23,7 @@ public class NotaController {
 
     private String getCurrentSchema() {
         String schema = SchemaInterceptor.getCurrentSchema();
+        System.out.println("SCHEMA ACTUAL = " + schema);
         return schema != null ? schema : "public";
     }
 
@@ -45,7 +46,6 @@ public class NotaController {
 
     @GetMapping("/estudiante/{ru}")
     public ResponseEntity<?> getNotasByEstudiante(@PathVariable("ru") String ru) {
-        System.out.println("SCHEMA = " + getCurrentSchema());
         try {
             String schema = getCurrentSchema();
             String sql = "SELECT * FROM " + schema + ".notas WHERE ru = '" + ru + "'";
