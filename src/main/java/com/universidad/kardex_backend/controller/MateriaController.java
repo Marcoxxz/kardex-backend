@@ -264,7 +264,10 @@ public class MateriaController {
                 return ResponseEntity.notFound().build();
             }
 
-            return ResponseEntity.ok("Materia desactivada");
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "Materia desactivada");
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -293,7 +296,10 @@ public class MateriaController {
                 return ResponseEntity.notFound().build();
             }
 
-            return ResponseEntity.ok("Materia activada");
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "Materia activada");
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             e.printStackTrace();
