@@ -2,34 +2,28 @@ package com.universidad.kardex_backend.controller;
 
 import com.universidad.kardex_backend.config.SchemaInterceptor;
 import com.universidad.kardex_backend.model.Materia;
-import com.universidad.kardex_backend.repository.MateriaRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/materias")
 @CrossOrigin(origins = "*")
 public class MateriaController {
-    
-    @Autowired
-    private MateriaRepository materiaRepository;
-    
+
     @PersistenceContext
     private EntityManager entityManager;
-    
+
     private String getCurrentSchema() {
         String schema = SchemaInterceptor.getCurrentSchema();
         return schema != null ? schema : "public";
     }
-    
+
     // Obtener todas las materias (desde el esquema del estudiante)
     @GetMapping
     public ResponseEntity<List<Materia>> getAllMaterias() {
@@ -42,7 +36,7 @@ public class MateriaController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Obtener materias activas
     @GetMapping("/activas")
     public ResponseEntity<List<Materia>> getMateriasActivas() {
@@ -55,7 +49,7 @@ public class MateriaController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Obtener materia por sigla
     @GetMapping("/{sigla}")
     public ResponseEntity<Materia> getMateriaBySigla(@PathVariable String sigla) {
@@ -68,7 +62,7 @@ public class MateriaController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
-    
+
     // Buscar materias por carrera
     @GetMapping("/carrera/{carrera}")
     public ResponseEntity<List<Materia>> getMateriasByCarrera(@PathVariable String carrera) {
@@ -81,7 +75,7 @@ public class MateriaController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Buscar materias por semestre
     @GetMapping("/semestre/{semestre}")
     public ResponseEntity<List<Materia>> getMateriasBySemestre(@PathVariable Integer semestre) {
@@ -94,124 +88,203 @@ public class MateriaController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Buscar materias por carrera y semestre
     @GetMapping("/carrera/{carrera}/semestre/{semestre}")
     public ResponseEntity<List<Materia>> getMateriasByCarreraAndSemestre(
-            @PathVariable String carrera, 
+            @PathVariable String carrera,
             @PathVariable Integer semestre) {
         try {
             String schema = getCurrentSchema();
-            String sql = "SELECT * FROM " + schema + ".materias WHERE carrera = '" + carrera + "' AND semestre = " + semestre;
+            String sql = "SELECT * FROM " + schema + ".materias WHERE carrera = '" + carrera + "' AND semestre = "
+                    + semestre;
             List<Materia> materias = entityManager.createNativeQuery(sql, Materia.class).getResultList();
             return new ResponseEntity<>(materias, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Buscar materias por término de búsqueda
     @GetMapping("/buscar")
     public ResponseEntity<List<Materia>> searchMaterias(@RequestParam String term) {
         try {
             String schema = getCurrentSchema();
-            String sql = "SELECT * FROM " + schema + ".materias WHERE LOWER(nombre) LIKE LOWER('%" + term + "%') OR LOWER(sigla) LIKE LOWER('%" + term + "%')";
+            String sql = "SELECT * FROM " + schema + ".materias WHERE LOWER(nombre) LIKE LOWER('%" + term
+                    + "%') OR LOWER(sigla) LIKE LOWER('%" + term + "%')";
             List<Materia> materias = entityManager.createNativeQuery(sql, Materia.class).getResultList();
             return new ResponseEntity<>(materias, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Crear nueva materia (solo para ADMIN - en esquema public)
     // ⚠️ Los estudiantes NO deberían poder crear materias
     @PostMapping
-    public ResponseEntity<Materia> createMateria(@RequestBody Materia materia) {
+    public ResponseEntity<?> createMateria(@RequestBody Materia materia) {
         try {
-            // Verificar si es admin (podrías agregar validación de rol)
-            // Por ahora, solo permitir en public
-            if (materiaRepository.existsById(materia.getSigla())) {
-                return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+            String schema = getCurrentSchema();
+
+            String verificarSql = "SELECT COUNT(*) FROM " + schema + ".materias " +
+                    "WHERE sigla = '" + materia.getSigla() + "'";
+
+            Number existe = (Number) entityManager
+                    .createNativeQuery(verificarSql)
+                    .getSingleResult();
+
+            if (existe.intValue() > 0) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("La materia ya existe");
             }
-            
-            if (materia.getCreditos() <= 0) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
-            
-            Materia nuevaMateria = materiaRepository.save(materia);
-            return new ResponseEntity<>(nuevaMateria, HttpStatus.CREATED);
+
+            String sql = "INSERT INTO " + schema + ".materias " +
+                    "(sigla, nombre, creditos, carrera, semestre, requisito, area, activo) " +
+                    "VALUES ('" +
+                    materia.getSigla() + "', '" +
+                    materia.getNombre() + "', " +
+                    materia.getCreditos() + ", '" +
+                    materia.getCarrera() + "', " +
+                    materia.getSemestre() + ", " +
+                    (materia.getRequisito() == null
+                            ? "NULL"
+                            : "'" + materia.getRequisito() + "'")
+                    +
+                    ", '" + materia.getArea() + "', " +
+                    materia.getActivo() + ")";
+
+            entityManager.createNativeQuery(sql).executeUpdate();
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("Materia creada correctamente");
+
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
-    
+
     // Actualizar materia existente (solo ADMIN)
     @PutMapping("/{sigla}")
-    public ResponseEntity<Materia> updateMateria(@PathVariable String sigla, @RequestBody Materia materia) {
-        Optional<Materia> materiaData = materiaRepository.findById(sigla);
-        
-        if (materiaData.isPresent()) {
-            Materia materiaExistente = materiaData.get();
-            materiaExistente.setNombre(materia.getNombre());
-            materiaExistente.setCreditos(materia.getCreditos());
-            materiaExistente.setCarrera(materia.getCarrera());
-            materiaExistente.setSemestre(materia.getSemestre());
-            materiaExistente.setRequisito(materia.getRequisito());
-            materiaExistente.setArea(materia.getArea());
-            materiaExistente.setActivo(materia.getActivo());
-            
-            Materia materiaActualizada = materiaRepository.save(materiaExistente);
-            return new ResponseEntity<>(materiaActualizada, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> updateMateria(
+            @PathVariable String sigla,
+            @RequestBody Materia materia) {
+
+        try {
+            String schema = getCurrentSchema();
+
+            String sql = "UPDATE " + schema + ".materias SET " +
+                    "nombre = '" + materia.getNombre() + "', " +
+                    "creditos = " + materia.getCreditos() + ", " +
+                    "carrera = '" + materia.getCarrera() + "', " +
+                    "semestre = " + materia.getSemestre() + ", " +
+                    "requisito = " +
+                    (materia.getRequisito() == null
+                            ? "NULL"
+                            : "'" + materia.getRequisito() + "'")
+                    +
+                    ", area = '" + materia.getArea() + "', " +
+                    "activo = " + materia.getActivo() +
+                    " WHERE sigla = '" + sigla + "'";
+
+            int filas = entityManager
+                    .createNativeQuery(sql)
+                    .executeUpdate();
+
+            if (filas == 0) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok("Materia actualizada");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
-    
+
     // Eliminar materia (solo ADMIN)
     @DeleteMapping("/{sigla}")
-    public ResponseEntity<Map<String, Boolean>> deleteMateria(@PathVariable String sigla) {
+    public ResponseEntity<?> deleteMateria(@PathVariable String sigla) {
+
         try {
-            Optional<Materia> materia = materiaRepository.findById(sigla);
-            if (materia.isPresent()) {
-                materiaRepository.deleteById(sigla);
-                Map<String, Boolean> response = new HashMap<>();
-                response.put("deleted", Boolean.TRUE);
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            String schema = getCurrentSchema();
+
+            System.out.println("SCHEMA DELETE = " + schema);
+
+            String sql = "DELETE FROM " + schema + ".materias " +
+                    "WHERE sigla = '" + sigla + "'";
+
+            int filas = entityManager
+                    .createNativeQuery(sql)
+                    .executeUpdate();
+
+            if (filas == 0) {
+                return ResponseEntity.notFound().build();
             }
+
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("deleted", true);
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
-    
+
     // Soft delete (desactivar materia) - solo ADMIN
     @PatchMapping("/{sigla}/desactivar")
-    public ResponseEntity<Materia> desactivarMateria(@PathVariable String sigla) {
-        Optional<Materia> materiaData = materiaRepository.findById(sigla);
-        
-        if (materiaData.isPresent()) {
-            Materia materia = materiaData.get();
-            materia.setActivo(false);
-            Materia materiaActualizada = materiaRepository.save(materia);
-            return new ResponseEntity<>(materiaActualizada, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> desactivarMateria(@PathVariable String sigla) {
+
+        try {
+            String schema = getCurrentSchema();
+
+            String sql = "UPDATE " + schema + ".materias " +
+                    "SET activo = false " +
+                    "WHERE sigla = '" + sigla + "'";
+
+            int filas = entityManager
+                    .createNativeQuery(sql)
+                    .executeUpdate();
+
+            if (filas == 0) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok("Materia desactivada");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
-    
+
     // Activar materia - solo ADMIN
     @PatchMapping("/{sigla}/activar")
-    public ResponseEntity<Materia> activarMateria(@PathVariable String sigla) {
-        Optional<Materia> materiaData = materiaRepository.findById(sigla);
-        
-        if (materiaData.isPresent()) {
-            Materia materia = materiaData.get();
-            materia.setActivo(true);
-            Materia materiaActualizada = materiaRepository.save(materia);
-            return new ResponseEntity<>(materiaActualizada, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> activarMateria(@PathVariable String sigla) {
+
+        try {
+            String schema = getCurrentSchema();
+
+            String sql = "UPDATE " + schema + ".materias " +
+                    "SET activo = true " +
+                    "WHERE sigla = '" + sigla + "'";
+
+            int filas = entityManager
+                    .createNativeQuery(sql)
+                    .executeUpdate();
+
+            if (filas == 0) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok("Materia activada");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
 }
