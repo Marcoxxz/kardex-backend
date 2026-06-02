@@ -31,7 +31,6 @@ WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE username = 'docente_perez');
 -- =====================================================================
 -- 3. POBLAR TABLA NOTAS (ENTORNO VULNERABLE A IDOR)
 -- =====================================================================
--- Notas del Estudiante 1 (Juan Carlos - RU-8821)
 INSERT INTO notas (ru, sigla_materia, nombre_materia, nota_final, gestion) 
 SELECT 'RU-8821', 'SIS-412', 'Seguridad de la Información', 85, '1/2026'
 WHERE NOT EXISTS (SELECT 1 FROM notas WHERE ru = 'RU-8821' AND sigla_materia = 'SIS-412');
@@ -40,7 +39,6 @@ INSERT INTO notas (ru, sigla_materia, nombre_materia, nota_final, gestion)
 SELECT 'RU-8821', 'SIS-321', 'Sistemas Operativos I', 71, '2/2025'
 WHERE NOT EXISTS (SELECT 1 FROM notas WHERE ru = 'RU-8821' AND sigla_materia = 'SIS-321');
 
--- Notas de la Estudiante 2 (María René - RU-4512)
 INSERT INTO notas (ru, sigla_materia, nombre_materia, nota_final, gestion) 
 SELECT 'RU-4512', 'SIS-412', 'Seguridad de la Información', 100, '1/2026'
 WHERE NOT EXISTS (SELECT 1 FROM notas WHERE ru = 'RU-4512' AND sigla_materia = 'SIS-412');
@@ -63,7 +61,6 @@ WHERE NOT EXISTS (SELECT 1 FROM reclamos WHERE ru = 'RU-1102' AND asunto = 'Actu
 -- =====================================================================
 -- 5. datos materia
 -- =====================================================================
--- Insertar datos de ejemplo
 INSERT INTO materias
 (sigla, nombre, creditos, carrera, semestre, requisito, area, activo)
 VALUES
