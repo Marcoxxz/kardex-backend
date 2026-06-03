@@ -40,4 +40,21 @@ public class EstudianteController {
             return ResponseEntity.status(500).body("Error en la consulta: " + e.getMessage());
         }
     }
+
+    @GetMapping("/listar")
+    public ResponseEntity<?> listarEstudiantes() {
+        try {
+
+            List<Estudiante> estudiantes = entityManager.createQuery(
+                    "FROM Estudiante",
+                    Estudiante.class)
+                    .getResultList();
+
+            return ResponseEntity.ok(estudiantes);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(e.getMessage());
+        }
+    }
 }

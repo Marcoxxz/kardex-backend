@@ -43,7 +43,9 @@ public class TramiteController {
                     + tramite.getDescripcion() + "') RETURNING id";
 
             Query query = entityManager.createNativeQuery(sql);
-            Long id = (Long) query.getSingleResult();
+
+            Number result = (Number) query.getSingleResult();
+            Long id = result.longValue();
 
             return ResponseEntity.ok("Trámite registrado en tu entorno aislado. ID: " + id);
         } catch (Exception e) {
