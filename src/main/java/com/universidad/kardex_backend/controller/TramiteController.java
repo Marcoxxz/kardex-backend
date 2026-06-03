@@ -26,55 +26,59 @@ public class TramiteController {
     }
 
     /**
-     * FASE 1: Almacenamiento Seguro.
-     * El estudiante crea un trámite en SU esquema aislado
+     * FASE 1: Almacenamiento Seguro (Blindado contra Inyección de Primer Orden).
+     * Guardamos el payload usando parámetros (?, ?), simulando que la app almacena
+     * el dato de forma "segura" en el entorno aislado del estudiante.
      */
     @PostMapping("/crear")
     @Transactional
     public ResponseEntity<?> crearTramite(@RequestBody Tramite tramite) {
         try {
             String schema = getCurrentSchema();
-            System.out.println("📝 Creando trámite en esquema: " + schema);
+            System.out.println("📝 Almacenando trámite en esquema seguro: " + schema);
 
-            // Guardar en el esquema del estudiante
-            String sql = "INSERT INTO " + schema + ".tramites (ru, codigo_seguridad, descripcion) VALUES ('"
-                    + tramite.getRu() + "', '"
-                    + tramite.getCodigoSeguridad() + "', '"
-                    + tramite.getDescripcion() + "') RETURNING id";
+            // Usamos parámetros nombrados para EVITAR SQLi de Primer Orden aquí.
+            // El esquema se concatena dinámicamente porque los nombres de tablas/esquemas
+            // no aceptan parámetros.
+            String sql = "INSERT INTO " + schema
+                    + ".tramites (ru, codigo_seguridad, descripcion) VALUES (:ru, :codigoSeguridad, :descripcion) RETURNING id";
 
-            Query query = entityManager.createNativeQuery(sql);
+            Query query = entityManager.createNativeQuery(sql)
+                    .setParameter("ru", tramite.getRu())
+                    .setParameter("codigoSeguridad", tramite.getCodigoSeguridad())
+                    .setParameter("descripcion", tramite.getDescripcion());
 
             Number result = (Number) query.getSingleResult();
             Long id = result.longValue();
 
-            return ResponseEntity.ok("Trámite registrado en tu entorno aislado. ID: " + id);
+            return ResponseEntity.ok("Trámite registrado de forma segura en almacenamiento. ID: " + id);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error al registrar el trámite: " + e.getMessage());
         }
     }
 
     /**
-     * FASE 2: La Detonación (Vulnerable) - SQL Injection de Segundo Orden
-     * El administrador revisa el trámite. El payload se guardó en el esquema del
-     * estudiante
-     * y ahora se ejecuta en la consulta del administrador.
+     * FASE 2: La Detonación (Vulnerable) - SQL Injection de Segundo Orden.
+     * El payload previamente almacenado se recupera de la base de datos y se
+     * concatena
+     * directamente en una nueva consulta de auditoría, alterando la lógica del
+     * negocio.
      */
     @GetMapping("/auditar/{id}")
+    @Transactional(readOnly = true) // Agregamos readOnly para proteger el estado transaccional si hay excepciones
+                                    // SQL
     public ResponseEntity<?> auditarTramite(@PathVariable("id") Long id) {
         try {
             String schema = getCurrentSchema();
-            System.out.println("SCHEMA AUDITORIA = " + schema);
-            System.out.println("ID BUSCADO = " + id);
+            System.out.println("🔍 Auditoría solicitada en SCHEMA: " + schema + " para ID: " + id);
 
-            // 1. Buscar el trámite en el esquema del estudiante
-            String findSql = "SELECT * FROM " + schema + ".tramites WHERE id = " + id;
+            // 1. Recuperamos el trámite de la BD (Uso de parámetro para evitar inyecciones
+            // previas)
+            String findSql = "SELECT * FROM " + schema + ".tramites WHERE id = :id";
+            Query findQuery = entityManager.createNativeQuery(findSql, Tramite.class)
+                    .setParameter("id", id);
 
-            System.out.println("FIND SQL = " + findSql);
-
-            Query findQuery = entityManager.createNativeQuery(findSql, Tramite.class);
             List<Tramite> tramites = findQuery.getResultList();
-
-            System.out.println("TRAMITES ENCONTRADOS = " + tramites.size());
 
             if (tramites.isEmpty()) {
                 return ResponseEntity.status(404).body("El trámite solicitado no existe.");
@@ -82,12 +86,11 @@ public class TramiteController {
 
             Tramite tramite = tramites.get(0);
 
-            // 2. VULNERABILIDAD: SQL Injection de Segundo Orden
-            // El 'codigoSeguridad' guardado (que pudo ser malicioso) se concatena
-            // directamente
+            // 2. VULNERABILIDAD: El payload recuperado se concatena crudo en la lógica de
+            // negocio.
             String sql = "SELECT * FROM " + schema + ".estudiantes WHERE carrera = '" + tramite.getCodigoSeguridad()
                     + "'";
-            System.out.println("🔍 EJECUTANDO SQL PELIGROSA: " + sql);
+            System.out.println("💥 DETONANDO SQL DE SEGUNDO ORDEN: " + sql);
 
             Query query = entityManager.createNativeQuery(sql, Estudiante.class);
             List<Estudiante> resultados = query.getResultList();
@@ -95,18 +98,14 @@ public class TramiteController {
             return ResponseEntity.ok(resultados);
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error en SQL Injection de Segundo Orden: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body("Error en la ejecución del payload (SQLi 2do Orden): " + e.getMessage());
         }
     }
 
-    /**
-     * ENDPOINT PARA ADMIN: Ver todos los trámites de todos los estudiantes
-     * (Esto requiere consultar todos los esquemas)
-     */
     @GetMapping("/admin/listar-todos")
     public ResponseEntity<?> listarTodosTramites() {
         try {
-            // Simplificado: usar la tabla public si existe
             String sql = "SELECT * FROM public.tramites";
             List<Tramite> tramites = entityManager.createNativeQuery(sql, Tramite.class).getResultList();
             return ResponseEntity.ok(tramites);
