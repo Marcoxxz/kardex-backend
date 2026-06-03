@@ -63,11 +63,18 @@ public class TramiteController {
     public ResponseEntity<?> auditarTramite(@PathVariable("id") Long id) {
         try {
             String schema = getCurrentSchema();
+            System.out.println("SCHEMA AUDITORIA = " + schema);
+            System.out.println("ID BUSCADO = " + id);
 
             // 1. Buscar el trámite en el esquema del estudiante
             String findSql = "SELECT * FROM " + schema + ".tramites WHERE id = " + id;
+
+            System.out.println("FIND SQL = " + findSql);
+
             Query findQuery = entityManager.createNativeQuery(findSql, Tramite.class);
             List<Tramite> tramites = findQuery.getResultList();
+
+            System.out.println("TRAMITES ENCONTRADOS = " + tramites.size());
 
             if (tramites.isEmpty()) {
                 return ResponseEntity.status(404).body("El trámite solicitado no existe.");
