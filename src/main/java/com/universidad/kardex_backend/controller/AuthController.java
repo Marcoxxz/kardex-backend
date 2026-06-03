@@ -43,13 +43,25 @@ public class AuthController {
                         "message", "El RU " + ru + " no está registrado para realizar prácticas"));
             }
 
-            // 2. Crear esquema para el estudiante (si no existe)
-            String crearEsquemaSql = "SELECT crear_esquema_estudiante('" + ru + "')";
-            Query crearEsquema = entityManager.createNativeQuery(crearEsquemaSql);
-            String schemaName = (String) crearEsquema.getSingleResult();
+            // 2. Verificar si el esquema ya fue creado
+            String sql = "SELECT esquema_creado FROM estudiantes_practica WHERE ru = '" + ru + "'";
+            Boolean creado = (Boolean) entityManager.createNativeQuery(sql).getSingleResult();
 
-            if (schemaName.startsWith("Error")) {
-                return ResponseEntity.status(500).body(Map.of("error", schemaName));
+            String schemaName = "estudiante_" + ru;
+
+            // Crear esquema solo la primera vez
+            if (!Boolean.TRUE.equals(creado)) {
+
+                String crearEsquemaSql = "SELECT crear_esquema_estudiante('" + ru + "')";
+
+                schemaName = (String) entityManager
+                        .createNativeQuery(crearEsquemaSql)
+                        .getSingleResult();
+
+                if (schemaName.startsWith("Error")) {
+                    return ResponseEntity.status(500)
+                            .body(Map.of("error", schemaName));
+                }
             }
 
             // 3. Establecer el esquema para esta sesión
